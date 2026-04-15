@@ -36,3 +36,48 @@ Questions I want to explore:
   calorie or sodium content across major fast food chains?
 - Which fast food chains have the biggest gap between their healthiest 
   and least healthy menu options?
+ ## Week 10 Update
+
+I am doing this project on my own.
+
+For my final project I decided to go with the housing affordability topic. 
+I think its one of the most relevant economic issues right now especially 
+for people my age who are about to enter the workforce and start thinking 
+about where to live, so I thought it would be interesting to actually dig 
+into the data behind it.
+
+### Data Sources I'm Considering
+
+**Zillow Research Data** (CSV downloads from zillow.com/research/data)
+Pros: really detailed, goes down to the city and zip code level, well known 
+and widely cited source, has a long historical record
+Cons: not a live API so I have to download it manually, and theres some 
+restrictions on redistributing it
+
+**FRED API** (Federal Reserve Economic Data)
+Pros: free API with a key, super well documented, has tons of housing and 
+income related indicators, reliable government source
+Cons: mostly national or state level data so it wont give me city level 
+granularity which is what I really want
+
+**Census Bureau API** (American Community Survey)
+Pros: official data, very detailed geographic breakdowns, free to use
+Cons: the query syntax is kind of complicated and the response times 
+are slow, took me a while to figure out how to use it
+
+My plan is to combine FRED for things like mortgage rates and median income 
+over time with Zillow data for city level home prices, and maybe pull in 
+Census data for income by metro area.
+
+### Questions I Want to Explore
+
+1. In which US cities has the gap between median home prices and median 
+household income grown the fastest over the last 10 years?
+
+2. How closely do 30 year mortgage rates track changes in home sale prices 
+across major cities, and is there a lag between when rates change and when 
+prices respond?
+
+3. Did the COVID period cause a lasting shift in home prices in mid sized 
+cities compared to large coastal ones, and have those differences started 
+to reverse or are they sticking around?
