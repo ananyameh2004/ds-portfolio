@@ -1,0 +1,92 @@
+Week 10 Update
+I am doing this project on my own.
+For my final project I decided to go with the housing affordability topic.
+I think its one of the most relevant economic issues right now especially
+for people my age who are about to enter the workforce and start thinking
+about where to live, so I thought it would be interesting to actually dig
+into the data behind it.
+Data Sources I'm Considering
+Zillow Research Data (CSV downloads from zillow.com/research/data)
+Pros: really detailed, goes down to the city and zip code level, well known
+and widely cited source, has a long historical record
+Cons: not a live API so I have to download it manually, and theres some
+restrictions on redistributing it
+FRED API (Federal Reserve Economic Data)
+Pros: free API with a key, super well documented, has tons of housing and
+income related indicators, reliable government source
+Cons: mostly national or state level data so it wont give me city level
+granularity which is what I really want
+Census Bureau API (American Community Survey)
+Pros: official data, very detailed geographic breakdowns, free to use
+Cons: the query syntax is kind of complicated and the response times
+are slow, took me a while to figure out how to use it
+My plan is to combine FRED for things like mortgage rates and median income
+over time with Zillow data for city level home prices, and maybe pull in
+Census data for income by metro area.
+Questions I Want to Explore
+
+In which US cities has the gap between median home prices and median
+household income grown the fastest over the last 10 years?
+How closely do 30 year mortgage rates track changes in home sale prices
+across major cities, and is there a lag between when rates change and when
+prices respond?
+Did the COVID period cause a lasting shift in home prices in mid sized
+cities compared to large coastal ones, and have those differences started
+to reverse or are they sticking around?
+
+Project Update — Week 11
+Data Sources
+For this phase of the project I decided to work with three datasets from FRED (Federal Reserve Bank of St. Louis), which is one of the most reliable and well-documented sources of U.S. economic data. All three are freely available with no account required and have clear documentation pages.
+
+Median Sales Price of Houses Sold (MSPUS) | Quarterly, 1963–2025 | Series page | Source: U.S. Census Bureau and HUD. Tracks the median sale price of newly constructed homes across the U.S.
+Real Median Household Income (MEHOINUSA646N) | Annual, 1984–2024 | Series page | Source: U.S. Census Bureau, Current Population Survey. Inflation-adjusted so I can make meaningful comparisons over time.
+30-Year Fixed Mortgage Rate (MORTGAGE30US) | Weekly, 1971–2026 | Series page | Source: Freddie Mac Primary Mortgage Market Survey.
+
+I originally planned to also use the NAR Housing Affordability Index (FIXHAI) from FRED, but ran into a roadblock: it is copyright-restricted by the National Association of Realtors and FRED is only legally allowed to distribute the last 13 months of it. Rather than rely on a pre-built index I couldn't fully access or inspect, I decided to construct my own affordability measures from the three series above. This ended up being a better approach analytically because I can be fully transparent about exactly how the measures are calculated and what assumptions they rest on.
+Data Acquisition
+All three datasets were downloaded as CSV files directly from their FRED series pages at no cost and with no account required. One thing I ran into: FRED defaults to showing only the last 13 months of data in its download window, so I had to manually change the date range in the graph view on each series page before hitting download. Once I figured that out, getting the full historical records was straightforward.
+Strengths and Limitations
+What these datasets can answer:
+
+How have home prices grown relative to income over time at the national level?
+How has the monthly cost of carrying a mortgage changed as a share of household income?
+How do periods of high interest rates like the early 1980s or 2022 to 2024 interact with home prices to affect affordability?
+How does affordability today compare to historical norms going back to the 1980s?
+
+What they cannot answer:
+
+Regional variation. All three series are national aggregates, so a family in rural Iowa and a family in San Francisco look identical in this data. This is a significant limitation given my original research questions were city-level. I may need to bring in Zillow or ACS data later to address this.
+Renter affordability. MSPUS covers new home sales only, meaning renters who make up about 35% of U.S. households are entirely absent from this analysis.
+Existing home market. MSPUS tracks new construction only, not the much larger resale market. New homes tend to skew higher-end, so my affordability measures may be slightly more pessimistic than what the typical buyer actually faces.
+Within-group inequality. The median income figure hides the full distribution. Affordability could be worsening badly for lower-income households even while the median looks stable.
+Down payment barriers. My affordability calculation assumes a 20% down payment, which is increasingly unrealistic for first-time buyers and doesn't capture that barrier at all.
+Demographics. There is no way to break these series down by race, age, or household type, which are all important dimensions of the housing crisis.
+
+What I Learned from Exploratory Analysis
+The first challenge I encountered was that the three series have completely different frequencies. Home price is quarterly, income is annual, and mortgage rate is weekly, so I couldn't just merge them directly. I had to resample the mortgage rate down to quarterly averages and forward-fill the annual income into quarterly observations before I could combine them into a single dataset covering 1984 to 2024.
+From there I constructed two affordability metrics from scratch:
+Price-to-income ratio is home price divided by annual income. The standard rule of thumb is that homes should cost no more than 3x annual income. Looking at this over time shows the ratio has risen well above that benchmark since the mid-2000s and has not come back down.
+Monthly payment-to-income ratio uses the standard mortgage amortization formula assuming 20% down and a 30-year fixed loan to calculate what share of monthly income the mortgage payment on the median home would consume each quarter. The conventional threshold is 28% and above that is considered cost-burdened. This metric captures something the price-to-income ratio misses: even when home prices are flat, a sharp rise in interest rates can push monthly payments well above what families can afford. This is clearly visible in the early 1980s and again after 2022.
+The most striking chart was the one that indexed all three series to 1984 = 100. Home prices have grown dramatically faster than income over the full period, and the gap widened sharply after 2020. Mortgage rates declined for most of the period before spiking back up recently, which had been partially offsetting the price increases until it stopped doing so.
+Cleaning and Wrangling
+Completed so far:
+
+Renamed all columns for readability
+Checked for missing values and found none in any of the three series
+Resampled mortgage rate from weekly to quarterly averages
+Forward-filled annual income into quarterly frequency
+Merged all three datasets on a shared quarterly date index using inner joins
+Restricted the combined dataset to 1984 to 2024 where all three series overlap
+Engineered three new features: price-to-income ratio, monthly mortgage payment using the amortization formula, and payment as a percentage of monthly income
+Created a decade-by-decade summary table for descriptive analysis
+
+Still to do:
+
+Evaluate whether linear interpolation would be more appropriate than forward-fill for the income series
+Decide whether to extend the analysis back to 1971 using just home price and mortgage rate to include the high-rate era of the late 1970s
+Potentially bring in a supplementary dataset, either Zillow for city-level prices or Census AHS data on cost burden rates, to address the national-only limitation
+
+Anticipated Challenges and Roadblocks
+The MSPUS series covers new construction only, not the full home sale market, which is a meaningful gap I will need to acknowledge clearly throughout the project. It may make sense to supplement it with the existing home sale price series from FRED (HOSMEDUSM052N) to get a more complete picture.
+The annual income data being forward-filled into quarterly observations is also something I am not fully satisfied with. Holding income flat for three quarters at a time means my quarterly affordability figures for Q2, Q3, and Q4 of each year are somewhat imprecise. I want to look at whether interpolation makes a meaningful difference before finalizing the analysis.
+The biggest open question is whether to stay at the national level or find a way to bring in city or metro-level data. My original research questions were all about city-level variation and the current datasets do not support that at all. Adding a geographic dimension would make the project significantly more interesting but also significantly more complex to wrangle.
