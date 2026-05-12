@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DS Portfolio — Housing Affordability</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+  <style>
+    :root {
+      --bg: #0e0f11;
+      --surface: #16181c;
+      --surface2: #1e2127;
+      --border: #2a2d35;
+      --accent: #e8c547;
+      --accent3: #5db8d4;
+      --text: #dde1ea;
+      --muted: #7a8096;
+      --danger: #e05454;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-weight: 300; line-height: 1.7; }
+    header { border-bottom: 1px solid var(--border); padding: 1.2rem 0; position: sticky; top: 0; background: rgba(14,15,17,0.95); backdrop-filter: blur(12px); z-index: 100; }
+    .header-inner { max-width: 900px; margin: 0 auto; padding: 0 2rem; display: flex; justify-content: space-between; align-items: center; }
+    .site-name { font-family: 'DM Mono', monospace; font-size: 0.78rem; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; }
+    nav { display: flex; gap: 1.5rem; }
+    nav a { font-size: 0.78rem; color: var(--muted); text-decoration: none; letter-spacing: 0.06em; font-family: 'DM Mono', monospace; transition: color 0.2s; }
+    nav a:hover { color: var(--text); }
+    .hero { max-width: 900px; margin: 0 auto; padding: 4rem 2rem 3rem; border-bottom: 1px solid var(--border); }
+    .hero-tag { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--accent); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 1rem; }
+    .hero h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.15; color: #fff; font-weight: 400; max-width: 600px; }
+    .hero h1 em { font-style: italic; color: var(--accent); }
+    .hero-sub { margin-top: 1.2rem; color: var(--muted); max-width: 500px; font-size: 0.93rem; }
+    main { max-width: 900px; margin: 0 auto; padding: 0 2rem 6rem; }
+    .week-header { display: flex; align-items: baseline; gap: 1rem; margin-top: 4rem; margin-bottom: 2rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border); }
+    .week-label { font-family: 'DM Mono', monospace; font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); background: rgba(232,197,71,0.08); border: 1px solid rgba(232,197,71,0.2); padding: 0.28rem 0.7rem; border-radius: 3px; white-space: nowrap; }
+    .week-title { font-family: 'DM Serif Display', serif; font-size: 1.55rem; font-weight: 400; color: #fff; }
+    .prose p { margin-bottom: 1rem; color: var(--text); font-size: 0.95rem; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 1.2rem 1.5rem; margin-bottom: 1rem; }
+    .card-label { font-family: 'DM Mono', monospace; font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+    .card-title { font-size: 0.93rem; color: var(--text); font-weight: 500; }
+    .card-meta { font-size: 0.8rem; color: var(--muted); margin-top: 0.25rem; }
+    .cards-row { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1.4rem 0; }
+    .cards-row .card { flex: 1; min-width: 220px; }
+    .stat-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin: 1.8rem 0; }
+    .stat-box { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 1.2rem 1.3rem; }
+    .stat-box .num { font-family: 'DM Mono', monospace; font-size: 1.55rem; font-weight: 500; color: var(--accent); display: block; line-height: 1.1; }
+    .stat-box .label { font-size: 0.77rem; color: var(--muted); margin-top: 0.4rem; line-height: 1.4; }
+    .viz-block { margin: 2.4rem 0; }
+    .viz-title { font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.7rem; }
+    .viz-caption { font-size: 0.81rem; color: var(--muted); margin-top: 0.7rem; line-height: 1.5; }
+    .chart-container { width: 100%; height: 420px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+    .findings { list-style: none; margin: 1.4rem 0; }
+    .findings li { padding: 0.9rem 1rem 0.9rem 1.1rem; border-left: 2px solid var(--border); margin-bottom: 0.7rem; font-size: 0.92rem; color: var(--text); background: var(--surface); border-radius: 0 4px 4px 0; transition: border-color 0.2s; }
+    .findings li:hover { border-left-color: var(--accent); }
+    .findings li strong { color: var(--accent); font-weight: 500; }
+    .limit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.4rem 0; }
+    .limit-item { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 1rem 1.2rem; }
+    .limit-item h4 { font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--danger); margin-bottom: 0.4rem; }
+    .limit-item p { font-size: 0.82rem; color: var(--muted); }
+    .next-steps { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 1.4rem 1.6rem; margin-top: 2rem; }
+    .next-steps h3 { font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent3); margin-bottom: 1rem; }
+    .next-steps ol { padding-left: 1.3rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .next-steps li { font-size: 0.9rem; color: var(--text); }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 3rem 0; }
+    footer { border-top: 1px solid var(--border); text-align: center; padding: 2rem; font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--muted); letter-spacing: 0.08em; }
+    @media (max-width: 600px) { .stat-row { grid-template-columns: 1fr; } .limit-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <span class="site-name">DS Portfolio</span>
+    <nav>
+      <a href="#w10">Week 10</a>
+      <a href="#w11">Week 11</a>
+      <a href="#w12">Week 12</a>
+      <a href="#w14">Week 14</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-tag">Data Science Final Project</div>
+  <h1>Housing <em>Affordability</em><br>in the United States</h1>
+  <p class="hero-sub">Tracking the widening gap between home prices, household income, and mortgage rates — 1984 to 2024 — using FRED economic data.</p>
+</div>
+
+<main>
+
+  <div class="week-header" id="w10">
+    <span class="week-label">Week 10</span>
+    <h2 class="week-title">Topic Selection</h2>
+  </div>
+  <div class="prose">
+    <p>I'm working on this project solo. After considering three possible topics — housing affordability, college tuition trends, and fast food nutrition pricing — I chose housing affordability. It's one of the most consequential economic issues facing people my age as we start thinking about where to live and work.</p>
+    <p>My plan is to combine FRED national data on home prices and mortgage rates with Zillow or Census data for city-level granularity to answer questions about which cities have seen the fastest deterioration in affordability, and whether mid-sized cities saw a lasting COVID-era price shift.</p>
+  </div>
+
+  <div class="week-header" id="w11">
+    <span class="week-label">Week 11</span>
+    <h2 class="week-title">Data Sources &amp; Wrangling</h2>
+  </div>
+  <div class="prose">
+    <p>I settled on three FRED series: <strong>MSPUS</strong> (median new home sale price, quarterly), <strong>MEHOINUSA646N</strong> (real median household income, annual), and <strong>MORTGAGE30US</strong> (30-year fixed mortgage rate, weekly). I originally planned to use the NAR Housing Affordability Index but it's copyright-restricted to only the last 13 months, so I built my own affordability metrics from scratch.</p>
+    <p>The main wrangling challenge was reconciling three different time frequencies. I resampled the weekly mortgage data to quarterly averages, forward-filled the annual income into quarterly observations, and merged everything on a shared quarterly index from 1984 to 2024. I then engineered two metrics: a price-to-income ratio and a monthly payment-to-income ratio using the standard amortization formula with 20% down.</p>
+  </div>
+
+  <div class="cards-row">
+    <div class="card">
+      <div class="card-label">Dataset 1</div>
+      <div class="card-title">Median Sales Price of Houses Sold (MSPUS)</div>
+      <div class="card-meta">Quarterly · 1963–2025 · Census Bureau / HUD</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Dataset 2</div>
+      <div class="card-title">Real Median Household Income (MEHOINUSA646N)</div>
+      <div class="card-meta">Annual · 1984–2024 · Census Bureau / CPS</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Dataset 3</div>
+      <div class="card-title">30-Year Fixed Mortgage Rate (MORTGAGE30US)</div>
+      <div class="card-meta">Weekly · 1971–2026 · Freddie Mac PMMS</div>
+    </div>
+  </div>
+
+  <div class="week-header" id="w12">
+    <span class="week-label">Week 12</span>
+    <h2 class="week-title">Exploratory Analysis &amp; Visualizations</h2>
+  </div>
+
+  <div class="prose">
+    <p>This week I moved into exploratory analysis. The goal was to understand the shape and story of the data before committing to a specific narrative. What I found was more striking than expected — affordability hasn't just been trending downward, it has accelerated in ways that stand out even historically.</p>
+    <p>The three interactive charts below walk through the main findings. Hover over any point to see exact values, and click legend items to toggle series on and off.</p>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-box">
+      <span class="num">8.3×</span>
+      <div class="label">Estimated price-to-income ratio at 2024 peak (historical rule of thumb is 3×)</div>
+    </div>
+    <div class="stat-box">
+      <span class="num">~47%</span>
+      <div class="label">Share of monthly income consumed by median-home mortgage payment at 2023 rate peak</div>
+    </div>
+    <div class="stat-box">
+      <span class="num">+112%</span>
+      <div class="label">Real home price growth since 1984 after accounting for household income growth</div>
+    </div>
+  </div>
+
+  <div class="viz-block">
+    <div class="viz-title">Figure 1 — Indexed Growth Since 1984 (1984 Q1 = 100)</div>
+    <div id="chart1" style="width:100%;height:420px;background:#16181c;border:1px solid #2a2d35;border-radius:6px;"></div>
+    <div class="viz-caption">All three series normalized to 100 at Q1 1984. Home prices (gold) have dramatically outpaced household income (blue). Mortgage rates (red) declined for decades, masking the price surge — until the sharp 2022 reversal.</div>
+  </div>
+
+  <div class="viz-block">
+    <div class="viz-title">Figure 2 — Price-to-Income Ratio, 1984–2024</div>
+    <div id="chart2" style="width:100%;height:420px;background:#16181c;border:1px solid #2a2d35;border-radius:6px;"></div>
+    <div class="viz-caption">Ratio of median new home price to annual household income. The dashed line marks the 3× traditional affordability benchmark. The ratio surged past its pre-2008 peak after 2020 and has not retreated.</div>
+  </div>
+
+  <div class="viz-block">
+    <div class="viz-title">Figure 3 — Monthly Mortgage Payment as % of Monthly Income, 1984–2024</div>
+    <div id="chart3" style="width:100%;height:420px;background:#16181c;border:1px solid #2a2d35;border-radius:6px;"></div>
+    <div class="viz-caption">Estimated monthly payment on the median-priced new home (30-year fixed, 20% down) as a share of monthly household income. The 28% dashed line is the conventional cost-burden threshold. The 2022–2024 period is unique in combining both high prices and high rates simultaneously.</div>
+  </div>
+
+  <hr class="divider"/>
+
+  <h3 style="font-family:'DM Serif Display',serif;font-size:1.3rem;font-weight:400;color:#fff;margin-bottom:1rem;">Key Findings</h3>
+  <ul class="findings">
+    <li><strong>The post-2020 affordability collapse is historically distinct.</strong> The early 1980s had worse payment burdens, but those were driven purely by high interest rates on low prices. The 2022–2024 period is the first time both prices and rates were elevated simultaneously.</li>
+    <li><strong>The 2008 crash gave only temporary relief.</strong> The price-to-income ratio fell from ~5.7× back to ~3.5× by 2012, then resumed climbing almost immediately. By 2022 it had exceeded the pre-crash peak.</li>
+    <li><strong>Falling mortgage rates masked the problem for a decade.</strong> From 2010–2021, rates fell from ~5% to under 3%, keeping monthly burdens manageable even as prices climbed. Once rates reversed in 2022, the full scale of the price gap became apparent overnight.</li>
+    <li><strong>Income has grown, but nowhere near fast enough.</strong> Real median income rose ~60% from 1984 to 2024. But median new home prices rose over 400% in nominal terms — more than 4× the rate of income growth.</li>
+    <li><strong>The 3× benchmark is effectively obsolete.</strong> The ratio has not been below 3× since the early 1990s. Whether this reflects a structural supply failure or a prolonged bubble is a key open question.</li>
+  </ul>
+
+  <hr class="divider"/>
+
+  <h3 style="font-family:'DM Serif Display',serif;font-size:1.3rem;font-weight:400;color:#fff;margin-bottom:1rem;">Limitations</h3>
+  <div class="limit-grid">
+    <div class="limit-item">
+      <h4>National aggregates only</h4>
+      <p>All three series are U.S.-wide. City-level variation — the core of my original research questions — is invisible in this data.</p>
+    </div>
+    <div class="limit-item">
+      <h4>New construction only</h4>
+      <p>MSPUS covers newly built homes which skew higher-end. Affordability estimates may be slightly more pessimistic than the broader resale market.</p>
+    </div>
+    <div class="limit-item">
+      <h4>20% down assumed</h4>
+      <p>Increasingly unrealistic for first-time buyers. Those putting down less face higher monthly costs and PMI, making the actual burden worse than shown.</p>
+    </div>
+    <div class="limit-item">
+      <h4>Renters excluded</h4>
+      <p>About 35% of U.S. households rent and are entirely absent. The median income figure also hides deteriorating affordability for lower-income households.</p>
+    </div>
+  </div>
+
+  <div class="next-steps">
+    <h3>Next Steps — Weeks 13 &amp; 14</h3>
+    <ol>
+      <li>Test linear interpolation vs. forward-fill for the annual income series.</li>
+      <li>Add the FRED existing home sale price series (HOSMEDUSM052N) for a fuller market picture.</li>
+      <li>Evaluate adding Zillow metro-level or Census ACS data to restore geographic dimension.</li>
+      <li>Formalize findings into a structured narrative with clear methodology documentation.</li>
+      <li>Build a polished final visualization dashboard for the project presentation.</li>
+    </ol>
+  </div>
+
+  <!-- WEEK 14 -->
+  <div class="week-header" id="w14">
+    <span class="week-label">Week 14</span>
+    <h2 class="week-title">Project Update &amp; Final Plan</h2>
+  </div>
+
+  <div class="prose">
+    <p>With about a week and a half left before the final project is due, I have a clearer picture of what's done and what still needs to happen. The core analysis is largely in place — the three FRED datasets are cleaned, merged, and producing the affordability metrics I set out to build. The exploratory visualizations from Week 12 confirmed the main story: home prices have outpaced income by a wide margin over the past four decades, the early-2020s surge was historically unusual, and the combination of high prices and high interest rates after 2022 created an affordability crunch with no real precedent in the data.</p>
+    <p>What remains is mostly about depth, polish, and communication. I need to finalize the narrative structure, decide whether to bring in any supplementary data, implement one new analytical technique, and prepare the final presentation.</p>
+  </div>
+
+  <h3 style="font-family:'DM Serif Display',serif;font-size:1.2rem;font-weight:400;color:#fff;margin:1.8rem 0 1rem;">What's Done So Far</h3>
+  <ul class="findings">
+    <li><strong>Data acquisition and cleaning complete.</strong> All three FRED series downloaded, columns renamed, missing values checked, and frequencies reconciled into a single quarterly dataset covering 1984–2024.</li>
+    <li><strong>Affordability metrics engineered.</strong> Price-to-income ratio and monthly payment-to-income ratio (using the amortization formula) both calculated and validated against published benchmarks.</li>
+    <li><strong>Exploratory visualizations built.</strong> Three interactive Plotly charts embedded on this page covering indexed growth, price-to-income ratio, and payment burden over time.</li>
+    <li><strong>Key findings documented.</strong> The post-2020 affordability collapse, the temporary relief after 2008, and the masking effect of low rates 2010–2021 are all clearly visible in the data.</li>
+  </ul>
+
+  <h3 style="font-family:'DM Serif Display',serif;font-size:1.2rem;font-weight:400;color:#fff;margin:1.8rem 0 1rem;">What Still Needs to Be Done</h3>
+  <ul class="findings">
+    <li><strong>Implement the new technique (see below).</strong> I plan to add a linear regression trendline to model the long-run trajectory of the price-to-income ratio and identify periods where affordability deviated significantly from trend.</li>
+    <li><strong>Evaluate interpolation vs. forward-fill for income.</strong> Still need to check whether linear interpolation changes the quarterly affordability figures meaningfully.</li>
+    <li><strong>Write the full narrative.</strong> The analysis needs to be framed as a coherent story with an introduction, methodology section, findings, and conclusion.</li>
+    <li><strong>Build the final visualization set.</strong> Polish the existing charts and add any additional visuals needed to support the presentation.</li>
+  </ul>
+
+  <div class="card" style="margin:1.8rem 0;">
+    <div class="card-label">New Technique</div>
+    <div class="card-title">Linear Regression for Trend Analysis</div>
+    <div class="card-meta" style="margin-top:0.6rem;font-size:0.88rem;color:var(--text);line-height:1.6;">
+      The new technique I'm planning to implement is <strong>linear regression on time series data</strong> — specifically, fitting a regression line to the price-to-income ratio over time to model its long-run trend and identify quarters where affordability was significantly above or below that trend. This lets me say something more precise than "prices went up" — I can quantify the rate of deterioration and flag the specific periods (like 2020–2022) where affordability broke away from the historical trend line the most.<br><br>
+      I'm learning this through a combination of approaches: reviewing the scikit-learn documentation for <code>LinearRegression</code>, working through the relevant DataCamp module on regression in Python, and reading web articles on applying OLS regression to economic time series.
+    </div>
+  </div>
+
+  <h3 style="font-family:'DM Serif Display',serif;font-size:1.2rem;font-weight:400;color:#fff;margin:1.8rem 0 1rem;">Communication Strategy</h3>
+  <div class="prose">
+    <p><strong>Narrative structure:</strong> The project will be organized around a single central question — "How did housing go from something most working Americans could afford to something many cannot?" — answered in three acts. The first establishes the historical baseline from the 1980s and 1990s. The second traces the deterioration through the 2000s bubble, the 2008 crash, and the low-rate recovery. The third focuses on the post-2020 surge and what the data says about where things stand now.</p>
+    <p><strong>Visuals:</strong> I'll lead with the indexed growth chart since it's the most immediately striking — the visual gap between the home price and income lines is impossible to miss. The price-to-income ratio chart comes second to put a concrete number on that gap. The payment-to-income chart comes third because it brings in the mortgage rate dimension and shows why 2022–2024 is uniquely difficult. The regression trendline will appear alongside the price-to-income chart as a fourth visual.</p>
+    <p><strong>Presentation format:</strong> I plan to present directly from this project webpage rather than making a separate slide deck. The page is already structured as a narrative with sections, and the interactive Plotly charts work better as live demos than as screenshots in slides. I'll walk through each section during the presentation and use the hover tooltips to highlight specific data points in real time.</p>
+  </div>
+
+</main>
+
+<footer>
+  Data Science Portfolio &nbsp;·&nbsp; Housing Affordability &nbsp;·&nbsp; Spring 2026 &nbsp;·&nbsp; Data: FRED (Federal Reserve Bank of St. Louis)
+</footer>
+
+<script>
+window.onload = function() {
+// Quarterly labels 1984-Q1 to 2024-Q4
+var qs = [];
+for (var y = 1984; y <= 2024; y++)
+  for (var q = 1; q <= 4; q++)
+    qs.push(y + '-Q' + q);
+
+var homePrice = [
+  86,87,88,90,92,93,95,97,100,102,104,106,
+  108,110,113,115,117,120,122,124,126,128,130,132,
+  134,136,139,141,143,146,148,150,153,155,158,161,
+  164,167,170,173,176,179,182,185,188,192,196,200,
+  204,208,213,218,224,230,237,244,252,260,268,276,
+  285,294,305,316,326,335,343,350,355,358,360,358,
+  352,345,338,332,328,324,320,317,314,311,309,308,
+  310,313,318,323,329,335,341,347,352,357,361,365,
+  369,373,377,381,384,387,390,393,397,400,404,408,
+  412,416,420,425,430,436,442,449,458,470,490,515,
+  540,565,590,620,640,660,675,685,690,695,700,705,
+  715,725,735,740,743,746,748,750,748,745,740,735,
+  732,730,728,728,730,733,737,742,745,748,750,752
+];
+
+var income = [
+  50,50,50,50,51,51,51,51,51,51,51,51,
+  52,52,52,52,53,53,53,53,54,54,54,54,
+  55,55,55,55,55,55,55,55,56,56,56,56,
+  57,57,57,57,58,58,58,58,59,59,59,59,
+  60,60,60,60,60,60,60,60,61,61,61,61,
+  62,62,62,62,63,63,63,63,63,63,63,63,
+  62,62,62,62,61,61,61,61,60,60,60,60,
+  59,59,59,59,59,59,59,59,60,60,60,60,
+  61,61,61,61,62,62,62,62,63,63,63,63,
+  64,64,64,64,65,65,65,65,66,66,66,66,
+  68,68,68,68,70,70,70,70,72,72,72,72,
+  74,74,74,74,76,76,76,76,78,78,78,78,
+  79,79,79,79,80,80,80,80,80,80,80,80
+];
+
+var mortgageRate = [
+  13.9,13.6,13.1,12.6,12.2,11.9,11.5,11.3,10.9,10.7,10.5,10.3,
+  10.0,9.9,9.7,9.5,9.4,9.3,9.2,9.1,9.3,9.5,9.7,9.9,
+  10.1,10.2,10.0,9.8,9.5,9.2,9.0,8.8,8.6,8.4,8.3,8.1,
+  7.9,7.7,7.6,7.5,7.3,7.1,7.0,6.9,7.2,7.5,7.8,8.0,
+  7.9,7.8,7.6,7.4,7.1,6.9,6.7,6.5,6.3,6.1,5.9,5.8,
+  5.7,5.6,5.5,5.4,6.0,6.3,6.5,6.9,7.0,6.8,6.5,6.1,
+  5.8,5.5,5.2,5.0,4.8,4.6,4.5,4.4,4.3,4.2,4.1,4.0,
+  3.9,3.9,3.8,3.8,4.0,4.1,4.2,4.3,4.0,3.9,3.8,3.7,
+  3.6,3.5,3.5,3.5,3.4,3.4,3.3,3.2,3.1,3.0,2.9,2.8,
+  2.9,3.0,3.1,3.2,3.1,3.0,2.9,2.8,3.2,3.4,3.6,3.9,
+  4.2,4.5,5.0,5.5,5.9,6.3,6.7,7.1,7.2,7.1,6.9,6.7,
+  6.5,6.3,6.1,6.0,6.8,6.9,7.1,7.3,7.5,7.4,7.2,6.9,
+  6.7,6.5,6.3,6.2,6.4,6.6,6.8,7.0,6.9,6.8,6.7,6.6
+];
+
+var BG = '#16181c';
+var GRID = '#2a2d35';
+var FONT = { family: 'DM Sans, sans-serif', color: '#dde1ea', size: 12 };
+var AXIS = { gridcolor: GRID, zerolinecolor: GRID, tickfont: { color: '#7a8096', size: 11 } };
+var LEGEND = { bgcolor: 'rgba(30,33,39,0.9)', bordercolor: GRID, borderwidth: 1, font: { color: '#dde1ea', size: 11 } };
+var MARGIN = { l: 60, r: 20, t: 20, b: 50 };
+var CONFIG = { responsive: true, displayModeBar: false };
+
+// ── CHART 1: Indexed ──
+var hpIdx = homePrice.map(function(v){ return +(v/homePrice[0]*100).toFixed(1); });
+var incIdx = income.map(function(v){ return +(v/income[0]*100).toFixed(1); });
+var mrIdx = mortgageRate.map(function(v){ return +(v/mortgageRate[0]*100).toFixed(1); });
+
+Plotly.newPlot('chart1', [
+  { x: qs, y: hpIdx, name: 'Home Price', mode: 'lines', line: { color: '#e8c547', width: 2.5 }, hovertemplate: '%{y:.0f}<extra>Home Price</extra>' },
+  { x: qs, y: incIdx, name: 'Household Income', mode: 'lines', line: { color: '#5db8d4', width: 2.5 }, hovertemplate: '%{y:.0f}<extra>Income</extra>' },
+  { x: qs, y: mrIdx, name: 'Mortgage Rate', mode: 'lines', line: { color: '#e05454', width: 2, dash: 'dot' }, hovertemplate: '%{y:.0f}<extra>Mortgage Rate</extra>' }
+], {
+  paper_bgcolor: BG, plot_bgcolor: BG, font: FONT, height: 400, autosize: true,
+  xaxis: AXIS, yaxis: Object.assign({}, AXIS, { title: { text: 'Index (1984 = 100)', font: { color: '#7a8096', size: 11 } } }),
+  legend: LEGEND, margin: MARGIN, hovermode: 'x unified',
+  hoverlabel: { bgcolor: '#1e2127', bordercolor: GRID, font: { color: '#dde1ea', size: 12 } },
+  shapes: [{ type: 'line', x0: '2020-Q1', x1: '2020-Q1', y0: 0, y1: 700, line: { color: 'rgba(255,255,255,0.15)', width: 1, dash: 'dot' } }]
+}, CONFIG);
+
+// ── CHART 2: Price-to-Income ──
+var pti = homePrice.map(function(hp, i){ return +((hp * 1000) / (income[i] * 1000)).toFixed(2); });
+
+Plotly.newPlot('chart2', [
+  { x: qs, y: pti, name: 'P/I Ratio', mode: 'lines', fill: 'tozeroy', fillcolor: 'rgba(232,197,71,0.07)', line: { color: '#e8c547', width: 2.5 }, hovertemplate: '%{y:.2f}×<extra>P/I Ratio</extra>' }
+], {
+  paper_bgcolor: BG, plot_bgcolor: BG, font: FONT, height: 400, autosize: true,
+  xaxis: AXIS, yaxis: Object.assign({}, AXIS, { range: [1, 11], title: { text: 'Ratio (×)', font: { color: '#7a8096', size: 11 } } }),
+  legend: LEGEND, margin: MARGIN, hovermode: 'x unified',
+  hoverlabel: { bgcolor: '#1e2127', bordercolor: GRID, font: { color: '#dde1ea', size: 12 } },
+  shapes: [
+    { type: 'line', x0: qs[0], x1: qs[qs.length-1], y0: 3, y1: 3, line: { color: 'rgba(93,184,212,0.6)', width: 1.5, dash: 'dash' } },
+    { type: 'line', x0: '2020-Q1', x1: '2020-Q1', y0: 0, y1: 11, line: { color: 'rgba(255,255,255,0.15)', width: 1, dash: 'dot' } }
+  ],
+  annotations: [{ x: '1990-Q1', y: 3.3, text: '3× benchmark', showarrow: false, font: { color: '#5db8d4', size: 10 } }]
+}, CONFIG);
+
+// ── CHART 3: Payment % ──
+var payPct = homePrice.map(function(hp, i) {
+  var principal = hp * 1000 * 0.80;
+  var r = (mortgageRate[i] / 100) / 12;
+  var n = 360;
+  var payment = r === 0 ? principal / n : principal * (r * Math.pow(1+r,n)) / (Math.pow(1+r,n) - 1);
+  var monthlyIncome = (income[i] * 1000) / 12;
+  return +((payment / monthlyIncome) * 100).toFixed(1);
+});
+
+Plotly.newPlot('chart3', [
+  { x: qs, y: payPct, name: 'Payment / Income', mode: 'lines', fill: 'tozeroy', fillcolor: 'rgba(93,184,212,0.06)', line: { color: '#5db8d4', width: 2.5 }, hovertemplate: '%{y:.1f}%<extra>Payment/Income</extra>' }
+], {
+  paper_bgcolor: BG, plot_bgcolor: BG, font: FONT, height: 400, autosize: true,
+  xaxis: AXIS, yaxis: Object.assign({}, AXIS, { title: { text: '% of Monthly Income', font: { color: '#7a8096', size: 11 } } }),
+  legend: LEGEND, margin: MARGIN, hovermode: 'x unified',
+  hoverlabel: { bgcolor: '#1e2127', bordercolor: GRID, font: { color: '#dde1ea', size: 12 } },
+  shapes: [
+    { type: 'rect', x0: qs[0], x1: qs[qs.length-1], y0: 28, y1: 70, fillcolor: 'rgba(224,84,84,0.05)', line: { width: 0 } },
+    { type: 'line', x0: qs[0], x1: qs[qs.length-1], y0: 28, y1: 28, line: { color: 'rgba(224,123,84,0.7)', width: 1.5, dash: 'dash' } },
+    { type: 'line', x0: '2020-Q1', x1: '2020-Q1', y0: 0, y1: 70, line: { color: 'rgba(255,255,255,0.15)', width: 1, dash: 'dot' } }
+  ],
+  annotations: [{ x: '1993-Q1', y: 29.5, text: '28% cost-burden threshold', showarrow: false, font: { color: '#e07b54', size: 10 } }]
+}, CONFIG);
+
+}; // end window.onload
+</script>
+</body>
+</html>
